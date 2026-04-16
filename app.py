@@ -5,31 +5,25 @@ app = Flask(__name__)
 
 def etos():
     _h = [
-        0x43, 0x54, 0x46, 0x7b, 0x55, 0x6e, 0x31, 0x30, 0x6e, 0x5f, 
-        0x33, 0x78, 0x66, 0x31, 0x6c, 0x74, 0x72, 0x34, 0x74, 0x31, 
-        0x30, 0x6e, 0x5f, 0x6d, 0x34, 0x73, 0x74, 0x33, 0x72, 0x5f, 
-        0x39, 0x39, 0x7d
+        0x43, 0x54, 0x46, 0x7b, 0x62, 0x34, 0x6c, 0x34, 0x6e, 0x63, 
+        0x33, 0x64, 0x5f, 0x71, 0x75, 0x30, 0x74, 0x33, 0x73, 0x5f, 
+        0x6d, 0x34, 0x73, 0x74, 0x33, 0x72, 0x7d
     ]
     return ''.join(chr(b) for b in _h)
 
 conn = sqlite3.connect(':memory:', check_same_thread=False)
 cursor = conn.cursor()
 
-cursor.execute("CREATE TABLE IF NOT EXISTS aurors (username TEXT, password TEXT, clearance TEXT, status TEXT)")
-cursor.execute("CREATE TABLE IF NOT EXISTS vault_secrets (flag TEXT)")
-
+cursor.execute("CREATE TABLE IF NOT EXISTS aurors (username TEXT, password TEXT, clearance TEXT)")
 cursor.execute("DELETE FROM aurors") 
-cursor.execute("DELETE FROM vault_secrets") 
-
-cursor.execute("INSERT INTO aurors VALUES ('dawlish', 'Obliviate_Dragon_99!@#', 'Level_10', 'active')")
-cursor.execute(f"INSERT INTO vault_secrets VALUES ('{etos()}')")
+cursor.execute("INSERT INTO aurors VALUES ('dawlish', 'Obliviate_Dragon_99!@#', 'Level_10')")
 conn.commit()
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ministry of Magic - Secure Portal </title>
+    <title>Ministry of Magic - Secure Portal</title>
     <style>
         body { font-family: 'Courier New', monospace; background-color: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
         .terminal { background-color: #161b22; border: 1px solid #30363d; padding: 30px; border-radius: 6px; width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
@@ -79,18 +73,18 @@ def login():
         username = request.form.get('username', '')
         password = request.form.get('password', '')
 
-        blacklist = [' ', '--', '#', 'or', 'and', 'dawlish']
+        blacklist = ['--', '#']
         waf_triggered = False
         
         for item in blacklist:
-            if item in username.lower() or item in password.lower():
+            if item in username or item in password:
                 waf_triggered = True
                 break
                 
         if waf_triggered:
             message = "<span class='error'>[!] WAF BLOCKED: Malicious payload detected.</span>"
         else:
-            query = f"SELECT * FROM aurors WHERE username = '{username}' AND password = '{password}' AND status = 'active'"
+            query = f"SELECT * FROM aurors WHERE username = '{username}' AND password = '{password}'"
             debug_query = query 
 
             try:
@@ -98,7 +92,7 @@ def login():
                 user = cursor.fetchone()
 
                 if user:
-                    message = f"<span class='success'>Access Granted.<br><br>Welcome, {user[0]}.</span>"
+                    message = f"<span class='success'>Access Granted.<br><br>Welcome, {user[0]}.<br><br><strong>{etos()}</strong></span>"
                 else:
                     message = "<span class='error'>Access Denied. Invalid credentials.</span>"
             except Exception as e:
