@@ -12,7 +12,7 @@ def etos():
     ]
     return ''.join(chr(b) for b in _h)
 
-conn = sqlite3.connect('ministry_v2.db', check_same_thread=False)
+conn = sqlite3.connect(':memory:', check_same_thread=False)
 cursor = conn.cursor()
 
 cursor.execute("CREATE TABLE IF NOT EXISTS aurors (username TEXT, password TEXT, clearance TEXT, status TEXT)")
